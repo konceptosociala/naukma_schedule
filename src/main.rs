@@ -3,24 +3,22 @@ mod error;
 mod macros;
 mod schedule;
 
+use anyhow::Result;
 use clap::Parser;
-
 use schedule::*;
-use error::*;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    #[arg(short, long)]
+    #[arg(short, long, required=true, num_args=1..)]
     files: Vec<String>,
 }
 
-fn main() -> ScheduleResult<()> {
+fn main() -> Result<()> {
     let args = Args::parse();
-    // let _schedule = Schedule::new(&args.files)?;
+    let schedule = Schedule::new(&args.files)?;
 
-    let schedule = Schedule::default();
-    println!("{}", serde_json::to_string_pretty(&schedule).unwrap());
-    
+    std::fs::write("schedule.json", serde_json::to_string_pretty(&schedule).unwrap())?;
+
     Ok(())
 }

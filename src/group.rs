@@ -1,10 +1,12 @@
 #![allow(dead_code)]
 
 use std::fmt::Display;
-use serde::Serialize;
+use std::str::FromStr;
+use serde::{Serialize, Deserialize};
 use validator::{Validate, ValidationErrors};
 
 use crate::serde_string;
+use crate::error::ScheduleError;
 
 #[derive(Serialize, Default, Clone, Debug)]
 pub struct Group {
@@ -20,7 +22,7 @@ pub struct Group {
     pub day: Day,
 }
 
-serde_string!(LessonType, LessonTime, Weeks, Auditorium, Day);
+serde_string!(LessonType, Time, LessonTime, Weeks, Auditorium, Day);
 
 pub type GroupNumber = u8;
 
@@ -40,7 +42,24 @@ impl Display for LessonType {
     }
 }
 
-#[derive(Validate, Default, Clone, Debug)]
+impl FromStr for LessonType {
+    type Err = ScheduleError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.contains("лекція") || s.contains("Лекція") {
+            Ok(LessonType::Lection)
+        } else {
+            let number: String = s.chars().filter(|c| c.is_digit(10)).collect();
+
+            Ok(
+                LessonType::Classes(number.parse::<u8>()
+                    .map_err(|_| ScheduleError::InvalidLessonType(s.to_owned()))?)
+            )
+        }
+    }
+}
+
+#[derive(Validate, Default, Clone, Copy, Debug)]
 pub struct Time {
     #[validate(range(min = 0, max = 23))]
     hours: u8,
@@ -79,7 +98,27 @@ impl Display for Time {
     }
 }
 
-#[derive(Default, Clone, Debug)]
+impl FromStr for Time {
+    type Err = ScheduleError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if let Some((h, m)) = s.split_once(':') {
+            let hours = h.parse::<u8>().map_err(|_| ScheduleError::InvalidTimeFormat(s.to_owned()))?;
+            let minutes = m.parse::<u8>().map_err(|_| ScheduleError::InvalidTimeFormat(s.to_owned()))?;
+
+            Ok(Time::new(hours, minutes)?)
+        } else if let Some((h, m)) = s.split_once('.') {
+            let hours = h.parse::<u8>().map_err(|_| ScheduleError::InvalidTimeFormat(s.to_owned()))?;
+            let minutes = m.parse::<u8>().map_err(|_| ScheduleError::InvalidTimeFormat(s.to_owned()))?;
+
+            Ok(Time::new(hours, minutes)?)
+        } else {
+            Err(ScheduleError::InvalidTimeFormat(s.to_owned()))
+        }
+    }
+}
+
+#[derive(Default, Clone, Copy, Debug)]
 pub struct LessonTime {
     pub from: Time,
     pub to: Time,
@@ -91,26 +130,100 @@ impl Display for LessonTime {
     }
 }
 
-#[derive(Validate, Default, Clone, Debug)]
-pub struct Weeks {
-    #[validate(range(min = 1, max = 40))]
-    first: u8,
-    #[validate(range(min = 1, max = 40))]
-    last: u8,
+impl FromStr for LessonTime {
+    type Err = ScheduleError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if let Some((from, to)) = s.split_once('-') {
+            Ok(LessonTime {
+                from: Time::from_str(from)?, 
+                to: Time::from_str(to)?
+            })
+        } else {
+            Err(ScheduleError::InvalidLessonTime(s.to_owned()))
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum Weeks {
+    Single(u8),
+    Range {
+        first: u8,
+        last: u8,
+    },
+    Array(Vec<u8>),
+    Combined(Vec<Weeks>),
 }
 
 impl Display for Weeks {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}-{}", self.first, self.last)
+        match self {
+            Weeks::Single(day) => write!(f, "{day}"),
+            Weeks::Range { first, last } => write!(f, "{first}-{last}"),
+            Weeks::Array(days) => {
+                let mut display = String::new();
+
+                for day in days {
+                    display.push_str(format!("{day},").as_str());
+                }
+
+                write!(f, "{display}")
+            }
+            Weeks::Combined(weeks) => {
+                let mut display = String::new();
+
+                for week in weeks {
+                    display.push_str(format!("{week},").as_str())
+                }
+
+                write!(f, "")
+            }
+        }
     }
 }
 
-impl Weeks {
-    pub fn new(first: u8, last: u8) -> Result<Self, ValidationErrors> {
-        let weeks = Weeks { first, last };
-        weeks.validate()?;
+impl FromStr for Weeks {
+    type Err = ScheduleError;
 
-        Ok(weeks)
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let s = s.replace(&[' ', '\n'][..], "");
+
+        if s.contains(',') && s.contains('-') {
+            // Combined
+            // TODO: Parse combined weeks
+            todo!("Cannot parse combined weeks");
+        } else {
+            // Range
+            if let Some((f, l)) = s.split_once('-') {
+                let first = f.parse::<u8>().map_err(|_| ScheduleError::InvalidWeeksFormat(s.to_owned()))?;
+                let last = l.parse::<u8>().map_err(|_| ScheduleError::InvalidWeeksFormat(s.to_owned()))?;
+    
+                Ok(Weeks::Range { first, last })
+            // Single
+            } else if let Ok(day) = s.parse::<u8>() {
+                Ok(Weeks::Single(day))
+            // Array
+            } else {
+                let results: Vec<Result<u8, ScheduleError>> = s.split(',').map(|n| {
+                    n.parse::<u8>().map_err(|_| ScheduleError::InvalidWeeksFormat(s.to_owned()))
+                }).collect();
+
+                let mut days = vec![];
+
+                for result in results {
+                    days.push(result?);
+                }
+
+                Ok(Weeks::Array(days))
+            }
+        }
+    }
+}
+
+impl Default for Weeks {
+    fn default() -> Self {
+        Weeks::Single(1)
     }
 }
 
@@ -155,7 +268,7 @@ impl Display for AuditoriumNumber {
     }
 }
 
-#[derive(Default, Clone, Debug)]
+#[derive(Default, Clone, Copy, Debug)]
 pub enum Day {
     #[default]
     Monday,
@@ -164,7 +277,6 @@ pub enum Day {
     Thursday,
     Friday,
     Saturday,
-    Sunday,
 }
 
 impl Display for Day {
@@ -178,10 +290,28 @@ impl Display for Day {
             Thursday => "Четвер",
             Friday => "П'ятниця",
             Saturday => "Субота",
-            Sunday => "Неділя",
         };
 
         write!(f, "{stringed}")
     }
 }
 
+impl FromStr for Day {
+    type Err = ScheduleError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        use Day::*;
+
+        let s = s.replace(&[' ', '\n'][..], "");
+
+        match s.as_str() {
+            "Понеділок" => Ok(Monday),
+            "Вівторок" => Ok(Tuesday),
+            "Середа" => Ok(Wednesday),
+            "Четвер" => Ok(Thursday),
+            "П’ятниця" | "П`ятниця" | "П'ятниця" => Ok(Friday),
+            "Субота" => Ok(Saturday),
+            _ => Err(ScheduleError::InvalidDayOfWeek(s.to_owned())),
+        }
+    }
+}
