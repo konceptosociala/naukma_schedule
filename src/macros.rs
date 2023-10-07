@@ -1,5 +1,7 @@
+pub use crate::impl_serde_display_fromstr;
+
 #[macro_export]
-macro_rules! serde_string {
+macro_rules! impl_serde_display_fromstr {
     ($($comp:ty),+) => {
         $(
             impl ::serde::Serialize for $comp {
@@ -8,14 +10,14 @@ macro_rules! serde_string {
                 }
             }
 
-            // impl<'de> ::serde::Deserialize<'de> for $comp {
-            //     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-            //         where D: ::serde::Deserializer<'de>
-            //     {
-            //         let s = String::deserialize(deserializer)?;
-            //         ::std::str::FromStr::from_str(&s).map_err(::serde::de::Error::custom)
-            //     }
-            // }
+            impl<'de> ::serde::Deserialize<'de> for $comp {
+                fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+                    where D: ::serde::Deserializer<'de>
+                {
+                    let s = String::deserialize(deserializer)?;
+                    ::std::str::FromStr::from_str(&s).map_err(::serde::de::Error::custom)
+                }
+            }
         )+
     };
 }

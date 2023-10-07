@@ -1,14 +1,12 @@
-#![allow(dead_code)]
-
 use std::fmt::Display;
 use std::str::FromStr;
 use serde::{Serialize, Deserialize};
 use validator::{Validate, ValidationErrors};
 
-use crate::serde_string;
+use crate::macros::impl_serde_display_fromstr;
 use crate::error::ScheduleError;
 
-#[derive(Serialize, Default, Clone, Debug)]
+#[derive(Serialize, Deserialize, Default, Clone, Debug)]
 pub struct Group {
     #[serde(rename = "Назва")]
     pub name: LessonType,
@@ -22,7 +20,7 @@ pub struct Group {
     pub day: Day,
 }
 
-serde_string!(LessonType, Time, LessonTime, Weeks, Auditorium, Day);
+impl_serde_display_fromstr!(LessonType, Time, LessonTime, Weeks, Auditorium, Day);
 
 pub type GroupNumber = u8;
 
@@ -152,7 +150,6 @@ pub enum Weeks {
         first: u8,
         last: u8,
     },
-    Array(Vec<u8>),
     Combined(Vec<Weeks>),
 }
 
@@ -161,15 +158,6 @@ impl Display for Weeks {
         match self {
             Weeks::Single(day) => write!(f, "{day}"),
             Weeks::Range { first, last } => write!(f, "{first}-{last}"),
-            Weeks::Array(days) => {
-                let mut display = String::new();
-
-                for day in days {
-                    display.push_str(format!("{day},").as_str());
-                }
-
-                write!(f, "{display}")
-            }
             Weeks::Combined(weeks) => {
                 let mut display = String::new();
 
@@ -177,7 +165,7 @@ impl Display for Weeks {
                     display.push_str(format!("{week},").as_str())
                 }
 
-                write!(f, "")
+                write!(f, "{display}")
             }
         }
     }
@@ -189,34 +177,30 @@ impl FromStr for Weeks {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.replace(&[' ', '\n'][..], "");
 
-        if s.contains(',') && s.contains('-') {
-            // Combined
-            // TODO: Parse combined weeks
-            todo!("Cannot parse combined weeks");
-        } else {
+        let elements: Vec<&str> = s.split(',').collect();
+
+        if elements.len() < 2 {
             // Range
             if let Some((f, l)) = s.split_once('-') {
                 let first = f.parse::<u8>().map_err(|_| ScheduleError::InvalidWeeksFormat(s.to_owned()))?;
                 let last = l.parse::<u8>().map_err(|_| ScheduleError::InvalidWeeksFormat(s.to_owned()))?;
-    
-                Ok(Weeks::Range { first, last })
+
+                return Ok(Weeks::Range { first, last });
             // Single
             } else if let Ok(day) = s.parse::<u8>() {
-                Ok(Weeks::Single(day))
-            // Array
+                return Ok(Weeks::Single(day));
+            // Invalid
             } else {
-                let results: Vec<Result<u8, ScheduleError>> = s.split(',').map(|n| {
-                    n.parse::<u8>().map_err(|_| ScheduleError::InvalidWeeksFormat(s.to_owned()))
-                }).collect();
-
-                let mut days = vec![];
-
-                for result in results {
-                    days.push(result?);
-                }
-
-                Ok(Weeks::Array(days))
+                return Err(ScheduleError::InvalidWeeksFormat(s.to_owned()));
             }
+        // Combined
+        } else {
+            let mut weeks = vec![];
+            for e in elements {
+                weeks.push(Weeks::from_str(e)?);
+            }
+    
+            return Ok(Weeks::Combined(weeks));
         }
     }
 }
@@ -245,11 +229,23 @@ impl Display for Auditorium {
     }
 }
 
+impl FromStr for Auditorium {
+    type Err = ScheduleError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Дистанційно" | "Д" | "д" => Ok(Auditorium::Distance),
+            "КМЦ" | "кмц" => Ok(Auditorium::ArtCenter),
+            _ => Ok(Auditorium::Pavilion(AuditoriumNumber::from_str(s)?))
+        }
+    }
+}
+
 #[derive(Validate, Default, Clone, Debug)]
 pub struct AuditoriumNumber {
     #[validate(range(min = 1, max = 9))]
     pavilion: u8,
-    #[validate(range(min = 1, max = 499))]
+    #[validate(range(min = 1, max = 599))]
     room: u16,
 }
 
@@ -265,6 +261,21 @@ impl AuditoriumNumber {
 impl Display for AuditoriumNumber {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}-{}", self.pavilion, self.room)
+    }
+}
+
+impl FromStr for AuditoriumNumber {
+    type Err = ScheduleError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if let Some((pavilion, room)) = s.split_once('-') {
+            Ok(AuditoriumNumber::new(
+                pavilion.parse::<u8>().map_err(|_| ScheduleError::InvalidAuditorium(s.to_owned()))?, 
+                room.parse::<u16>().map_err(|_| ScheduleError::InvalidAuditorium(s.to_owned()))?,
+            )?)
+        } else {
+            Err(ScheduleError::InvalidAuditorium(s.to_owned()))
+        }
     }
 }
 
