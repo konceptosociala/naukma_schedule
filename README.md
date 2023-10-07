@@ -2,6 +2,8 @@
 
 **FIdo** testing project: Studying schedule parser for National University of Kyiv-Mohyla Academia 
 
+[Documentation](https://konceptosociala.eu.org/naukma_schedule)
+
 ## Usage
 
 ```bash

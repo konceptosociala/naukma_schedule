@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Auditorium","Day","LessonType","Weeks"],"struct":["AuditoriumNumber","Group","LessonTime","Time"],"type":["GroupNumber"]};

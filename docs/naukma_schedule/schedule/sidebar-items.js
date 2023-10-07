@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["SpecialityName"],"struct":["Discipline","Faculty","Schedule","Speciality"],"type":["Disciplines","Specialities"]};
