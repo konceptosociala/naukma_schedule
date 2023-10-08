@@ -1,5 +1,6 @@
 pub use crate::impl_serde_display_fromstr;
 
+/// Simply implements `Serialize` and `Deserialize` traits for types with `Display` and `FromStr` impls.
 #[macro_export]
 macro_rules! impl_serde_display_fromstr {
     ($($comp:ty),+) => {

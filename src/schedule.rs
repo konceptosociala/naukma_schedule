@@ -11,13 +11,26 @@ use crate::{
     error::{ScheduleResult, ScheduleError}
 };
 
+/// Represents a university schedule, including information 
+/// about university faculties.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Schedule {
+    /// University faculties presented in schedule. Can be 
+    /// parsed and added manually as well.
     #[serde(rename = "Факультети")]
-    faculties: Vec<Faculty>,
+    pub faculties: Vec<Faculty>,
 }
 
 impl Schedule {
+    /// Creates a new `Schedule` by parsing university schedules from Excel files.
+    ///
+    /// # Arguments
+    ///
+    /// * `paths`: A slice of paths to Excel files containing faculty schedules.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the parsed `Schedule` if successful, or an error if parsing fails.
     pub fn new<P: AsRef<Path>>(paths: &[P]) -> ScheduleResult<Self> {
         let mut faculties = vec![];
 
@@ -29,62 +42,32 @@ impl Schedule {
     }
 }
 
-impl Default for Schedule {
-    fn default() -> Self {
-        Schedule {
-            faculties: vec![
-                Faculty {
-                    name: "Факультет Економічних Наук".to_owned(),
-                    specialities: [(
-                        SpecialityName::Management,
-                        Speciality {
-                            disciplines: [(
-                                "Інвестування".to_owned(),
-                                Discipline {
-                                    groups: vec![
-                                        Group {
-                                            name: LessonType::Lection,
-                                            time: LessonTime {
-                                                from: Time::new(08, 30).unwrap(),
-                                                to: Time::new(09, 50).unwrap(),
-                                            },
-                                            weeks: Weeks::Range { first: 1, last: 12 },
-                                            auditorium: Auditorium::Pavilion(AuditoriumNumber::new(3, 205).unwrap()),
-                                            day: Day::Wednesday,
-                                        },
-                                        Group {
-                                            name: LessonType::Classes(1),
-                                            time: LessonTime {
-                                                from: Time::new(10, 00).unwrap(),
-                                                to: Time::new(11, 20).unwrap(),
-                                            },
-                                            weeks: Weeks::Single(3),
-                                            auditorium: Auditorium::Pavilion(AuditoriumNumber::new(1, 313).unwrap()),
-                                            day: Day::Friday,
-                                        }
-                                    ]
-                                }
-                            )].into()
-                        }
-                    )].into(),
-                }
-            ]
-        }
-    }
-}
-
 impl_serde_display_fromstr!(SpecialityName);
 
+/// Represents a university faculty, including its name and 
+/// a collection of specialities with their schedules.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Faculty {
+    /// The name of the faculty.
     #[serde(rename = "Назва факультету")]
     name: String,
+    /// A mapping of speciality names to their associated specialities.
     #[serde(rename = "Cпеціальності")]
     specialities: Specialities,
 }
 
 impl Faculty {
+    /// Creates a new `Faculty` by parsing faculty data from an Excel file.
+    ///
+    /// # Arguments
+    ///
+    /// * `path`: The path to the Excel file containing faculty schedule data.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the parsed `Faculty` if successful, or an error if parsing fails.
     pub fn new(path: &Path) -> ScheduleResult<Self> {
+        // Get faculty name (and optionally a defined speciality name)
         let (name, mut specialities) = {
             let elements: Vec<&str> = path.to_str().unwrap().split('.').collect();
             let mut specialities = Specialities::new();
@@ -100,10 +83,10 @@ impl Faculty {
         };
 
         let mut workbook: Xlsx<_> = open_workbook(path)
-            .map_err(|e| Error::from(e))?;
+            .map_err(Error::from)?;
         let range = workbook.worksheet_range("Аркуш1")
             .ok_or(Error::Msg("Cannot find 'Аркуш1' sheet"))?
-            .map_err(|e| Error::from(e))?;
+            .map_err(Error::from)?;
 
         let mut reserved_day = Day::default();
         let mut reserved_time = LessonTime::default();
@@ -111,8 +94,10 @@ impl Faculty {
         let defined_speciality = !specialities.is_empty();
 
         for row in range.rows() {
+            // Get day of the week
             let day = match &row[0] {
                 DataType::String(s) => {
+                    // Skip first header row
                     if s == "День" {
                         continue;
                     } else {
@@ -123,6 +108,7 @@ impl Faculty {
                 _ => reserved_day,
             };
             
+            // Get lesson time
             let time = match &row[1] {
                 DataType::String(s) => {
                     reserved_time = LessonTime::from_str(s)?;
@@ -131,6 +117,7 @@ impl Faculty {
                 _ => reserved_time,
             };
 
+            // Get lesson type (group number or a lection)
             let name = match &row[3] {
                 DataType::String(s) => LessonType::from_str(s)?,
                 DataType::Int(number) => LessonType::Classes(*number as u8),
@@ -139,6 +126,7 @@ impl Faculty {
                 _ => Err(ScheduleError::InvalidLessonType(row[3].to_string()))?,
             };
 
+            // Get studying weeks
             let weeks = match &row[4] {
                 DataType::String(s) => Weeks::from_str(s)?,
                 DataType::Int(number) => Weeks::Single(*number as u8),
@@ -147,6 +135,7 @@ impl Faculty {
                 _ => Err(ScheduleError::InvalidWeeksFormat(row[4].to_string()))?,
             };
 
+            // Get auditorium number (may be also art center or distance)
             let auditorium = match &row[5] {
                 DataType::String(s) => Auditorium::from_str(s)?,
                 _ => Err(ScheduleError::InvalidAuditorium(row[5].to_string()))?
@@ -154,6 +143,13 @@ impl Faculty {
 
             let group = Group { name, time, weeks, auditorium, day };
 
+            // If speciality defined in the filename, use it in parsing
+            // and just copy discipline name without processing.
+            //
+            // Else if not defined, parse speciality names from
+            // discipline names and write them to the specialities collection.
+            // If not present, prefer `General` speciality (for common
+            // lection attendance)
             if defined_speciality {
                 let discipline = row[2].to_string().replace("  ", " ").replace('\n', "");
                 let spec = specialities.values_mut().next().unwrap();
@@ -194,24 +190,43 @@ impl Faculty {
     }
 }
 
+/// Represents a university speciality, including a collection of disciplines.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Speciality {
+    /// A mapping of discipline names to their associated groups.
     #[serde(rename = "Дисципліни")]
     disciplines: Disciplines,
 }
 
+/// Represents the names of university specialities.
 #[derive(Default, Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum SpecialityName {
+    /// Software Engineering speciality of Faculty of Informatics.
     SoftwareEngineering,
+    /// Economics speciality of Faculty of Economical Science.
     Economics,
+    /// Management speciality of Faculty of Economical Science.
     Management,
+    /// Finances speciality of Faculty of Economical Science.
     Finances,
+    /// Marketing speciality of Faculty of Economical Science.
     Marketing,
+    /// General speciality (default when no specific speciality is identified).
     #[default]
     General,
 }
 
 impl SpecialityName {
+    /// Converts a discipline name into a list of associated speciality names.
+    ///
+    /// # Arguments
+    ///
+    /// * `discipline`: The name of the discipline with defined 
+    /// specialities (e.g. `(марк.)`, `(екон.+фін.)`).
+    ///
+    /// # Returns
+    ///
+    /// Parsed speciality names representing the associated specialities.
     pub fn from_discipline(discipline: &str) -> Vec<SpecialityName> {
         use SpecialityName::*;
 
@@ -295,12 +310,16 @@ impl FromStr for SpecialityName {
     }
 }
 
+/// A mapping of university speciality names to their associated specialities.
 pub type Specialities = HashMap<SpecialityName, Speciality>;
 
+/// Represents a university discipline, including a list of associated groups.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Discipline {
+    /// A list of student groups associated with this discipline.
     #[serde(rename = "Групи")]
     groups: Vec<Group>,
 }
 
+/// A mapping of discipline names to their associated disciplines.
 pub type Disciplines = HashMap<String, Discipline>;

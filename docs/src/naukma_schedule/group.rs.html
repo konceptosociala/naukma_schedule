@@ -326,6 +326,69 @@
 <a href="#326" id="326">326</a>
 <a href="#327" id="327">327</a>
 <a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Display;
 <span class="kw">use </span>std::str::FromStr;
 <span class="kw">use </span>serde::{Serialize, Deserialize};
@@ -334,29 +397,41 @@
 <span class="kw">use </span><span class="kw">crate</span>::macros::impl_serde_display_fromstr;
 <span class="kw">use </span><span class="kw">crate</span>::error::ScheduleError;
 
-<span class="attr">#[derive(Serialize, Deserialize, Default, Clone, Debug)]
+<span class="doccomment">/// Represents a university group, including its name, 
+/// lesson time, studying weeks, auditorium and day of the week.
+</span><span class="attr">#[derive(Serialize, Deserialize, Default, Clone, Debug)]
 </span><span class="kw">pub struct </span>Group {
-    <span class="attr">#[serde(rename = <span class="string">&quot;Назва&quot;</span>)]
+    <span class="doccomment">/// The name of the group / actually type of the lesson being taught.
+    </span><span class="attr">#[serde(rename = <span class="string">&quot;Назва&quot;</span>)]
     </span><span class="kw">pub </span>name: LessonType,
-    <span class="attr">#[serde(rename = <span class="string">&quot;Час&quot;</span>)]
+    <span class="doccomment">/// The time of the lesson.
+    </span><span class="attr">#[serde(rename = <span class="string">&quot;Час&quot;</span>)]
     </span><span class="kw">pub </span>time: LessonTime,
-    <span class="attr">#[serde(rename = <span class="string">&quot;Тижні&quot;</span>)]
+    <span class="doccomment">/// The weeks during which the lesson occurs.
+    </span><span class="attr">#[serde(rename = <span class="string">&quot;Тижні&quot;</span>)]
     </span><span class="kw">pub </span>weeks: Weeks,
-    <span class="attr">#[serde(rename = <span class="string">&quot;Аудиторія&quot;</span>)]
+    <span class="doccomment">/// The auditorium where the lesson takes place.
+    </span><span class="attr">#[serde(rename = <span class="string">&quot;Аудиторія&quot;</span>)]
     </span><span class="kw">pub </span>auditorium: Auditorium,
-    <span class="attr">#[serde(rename = <span class="string">&quot;День тижня&quot;</span>)]
+    <span class="doccomment">/// The day of the week when the lesson occurs.
+    </span><span class="attr">#[serde(rename = <span class="string">&quot;День тижня&quot;</span>)]
     </span><span class="kw">pub </span>day: Day,
 }
 
 <span class="macro">impl_serde_display_fromstr!</span>(LessonType, Time, LessonTime, Weeks, Auditorium, Day);
 
-<span class="kw">pub type </span>GroupNumber = u8;
+<span class="doccomment">/// Represents the number of a discipline group.
+</span><span class="kw">pub type </span>GroupNumber = u8;
 
-<span class="attr">#[derive(Default, Clone, Debug)]
+<span class="doccomment">/// Represents the name of the group / type of a university lesson, 
+/// which can be a lection or classes with a group number.
+</span><span class="attr">#[derive(Default, Clone, Debug)]
 </span><span class="kw">pub enum </span>LessonType {
-    <span class="attr">#[default]
+    <span class="doccomment">/// A lection lesson type (intended for each group).
+    </span><span class="attr">#[default]
     </span>Lection,
-    Classes(GroupNumber),
+    <span class="doccomment">/// A classes lesson type with a group number specified.
+    </span>Classes(GroupNumber),
 }
 
 <span class="kw">impl </span>Display <span class="kw">for </span>LessonType {
@@ -375,7 +450,7 @@
         <span class="kw">if </span>s.contains(<span class="string">&quot;лекція&quot;</span>) || s.contains(<span class="string">&quot;Лекція&quot;</span>) {
             <span class="prelude-val">Ok</span>(LessonType::Lection)
         } <span class="kw">else </span>{
-            <span class="kw">let </span>number: String = s.chars().filter(|c| c.is_digit(<span class="number">10</span>)).collect();
+            <span class="kw">let </span>number: String = s.chars().filter(|c| c.is_ascii_digit()).collect();
 
             <span class="prelude-val">Ok</span>(
                 LessonType::Classes(number.parse::&lt;u8&gt;()
@@ -385,16 +460,33 @@
     }
 }
 
-<span class="attr">#[derive(Validate, Default, Clone, Copy, Debug)]
+<span class="doccomment">/// Represents a time of day, including hours and minutes.
+///
+/// The `Time` struct is used to represent a specific time of day and can be validated
+/// to ensure that the hours and minutes are within the valid range.
+</span><span class="attr">#[derive(Validate, Default, Clone, Copy, Debug)]
 </span><span class="kw">pub struct </span>Time {
-    <span class="attr">#[validate(range(min = <span class="number">0</span>, max = <span class="number">23</span>))]
+    <span class="doccomment">/// The hours component of the time
+    </span><span class="attr">#[validate(range(min = <span class="number">0</span>, max = <span class="number">23</span>))]
     </span>hours: u8,
-    <span class="attr">#[validate(range(min = <span class="number">0</span>, max = <span class="number">59</span>))]
+    <span class="doccomment">/// The minutes component of the time
+    </span><span class="attr">#[validate(range(min = <span class="number">0</span>, max = <span class="number">59</span>))]
     </span>minutes: u8,
 }
 
 <span class="kw">impl </span>Time {
-    <span class="kw">pub fn </span>new(hours: u8, minutes: u8) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, ValidationErrors&gt; {
+    <span class="doccomment">/// Creates a new `Time` instance with the specified hours and minutes.
+    ///
+    /// # Arguments
+    ///
+    /// * `hours`: The hours component of the time.
+    /// * `minutes`: The minutes component of the time.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the created `Time` if it passes validation,
+    /// or validation errors if validation fails.
+    </span><span class="kw">pub fn </span>new(hours: u8, minutes: u8) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, ValidationErrors&gt; {
         <span class="kw">let </span>time = Time { hours, minutes };
         time.validate()<span class="question-mark">?</span>;
 
@@ -444,10 +536,13 @@
     }
 }
 
-<span class="attr">#[derive(Default, Clone, Copy, Debug)]
+<span class="doccomment">/// Represents a time range for a lesson, including start and end time.
+</span><span class="attr">#[derive(Default, Clone, Copy, Debug)]
 </span><span class="kw">pub struct </span>LessonTime {
-    <span class="kw">pub </span>from: Time,
-    <span class="kw">pub </span>to: Time,
+    <span class="doccomment">/// The starting time of the lesson.
+    </span><span class="kw">pub </span>from: Time,
+    <span class="doccomment">/// The ending time of the lesson.
+    </span><span class="kw">pub </span>to: Time,
 }
 
 <span class="kw">impl </span>Display <span class="kw">for </span>LessonTime {
@@ -471,14 +566,20 @@
     }
 }
 
-<span class="attr">#[derive(Clone, Debug, PartialEq)]
+<span class="doccomment">/// Represents the weeks during which a lesson occurs in the university schedule.
+</span><span class="attr">#[derive(Clone, Debug, PartialEq)]
 </span><span class="kw">pub enum </span>Weeks {
-    Single(u8),
-    Range {
-        first: u8,
-        last: u8,
+    <span class="doccomment">/// A single week number. Example `6`.
+    </span>Single(u8),
+    <span class="doccomment">/// A range of week numbers, specified by the first and last week of studying. Example `3-14`.
+    </span>Range {
+        <span class="doccomment">/// The first week in the range.
+        </span>first: u8,
+        <span class="doccomment">/// The last week in the range.
+        </span>last: u8,
     },
-    Combined(Vec&lt;Weeks&gt;),
+    <span class="doccomment">/// A combination of multiple week specifications. Example `1,3-5,7,8,10-12`.
+    </span>Combined(Vec&lt;Weeks&gt;),
 }
 
 <span class="kw">impl </span>Display <span class="kw">for </span>Weeks {
@@ -493,7 +594,7 @@
                     display.push_str(<span class="macro">format!</span>(<span class="string">&quot;{week},&quot;</span>).as_str())
                 }
 
-                <span class="macro">write!</span>(f, <span class="string">&quot;{display}&quot;</span>)
+                <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, display.trim_end_matches(<span class="string">&#39;,&#39;</span>))
             }
         }
     }
@@ -513,7 +614,7 @@
                 <span class="kw">let </span>first = f.parse::&lt;u8&gt;().map_err(|<span class="kw">_</span>| ScheduleError::InvalidWeeksFormat(s.to_owned()))<span class="question-mark">?</span>;
                 <span class="kw">let </span>last = l.parse::&lt;u8&gt;().map_err(|<span class="kw">_</span>| ScheduleError::InvalidWeeksFormat(s.to_owned()))<span class="question-mark">?</span>;
 
-                <span class="kw">return </span><span class="prelude-val">Ok</span>(Weeks::Range { first, last });
+                <span class="prelude-val">Ok</span>(Weeks::Range { first, last })
             <span class="comment">// Single
             </span>} <span class="kw">else if let </span><span class="prelude-val">Ok</span>(day) = s.parse::&lt;u8&gt;() {
                 <span class="kw">return </span><span class="prelude-val">Ok</span>(Weeks::Single(day));
@@ -528,7 +629,7 @@
                 weeks.push(Weeks::from_str(e)<span class="question-mark">?</span>);
             }
     
-            <span class="kw">return </span><span class="prelude-val">Ok</span>(Weeks::Combined(weeks));
+            <span class="prelude-val">Ok</span>(Weeks::Combined(weeks))
         }
     }
 }
@@ -539,12 +640,17 @@
     }
 }
 
-<span class="attr">#[derive(Default, Clone, Debug)]
+<span class="doccomment">/// Represents an auditorium for university lessons, which can be a distance learning auditorium (online),
+/// an art center (for lections), or a pavilion with a specific room number.
+</span><span class="attr">#[derive(Default, Clone, Debug)]
 </span><span class="kw">pub enum </span>Auditorium {
-    <span class="attr">#[default]
+    <span class="doccomment">/// Auditorium type representing distance learning.
+    </span><span class="attr">#[default]
     </span>Distance,
-    ArtCenter,
-    Pavilion(AuditoriumNumber),
+    <span class="doccomment">/// Auditorium type representing the Culture Art Center.
+    </span>ArtCenter,
+    <span class="doccomment">/// Auditorium type representing a pavilion with a specific number.
+    </span>Pavilion(AuditoriumNumber),
 }
 
 <span class="kw">impl </span>Display <span class="kw">for </span>Auditorium {
@@ -569,16 +675,34 @@
     }
 }
 
-<span class="attr">#[derive(Validate, Default, Clone, Debug)]
+<span class="doccomment">/// Represents an auditorium number, including a pavilion number and a room number.
+///
+/// The `AuditoriumNumber` struct is used to represent a specific auditorium number,
+/// and it can be validated to ensure that both the pavilion and room numbers are within
+/// their respective valid ranges.
+</span><span class="attr">#[derive(Validate, Default, Clone, Debug)]
 </span><span class="kw">pub struct </span>AuditoriumNumber {
-    <span class="attr">#[validate(range(min = <span class="number">1</span>, max = <span class="number">9</span>))]
+    <span class="doccomment">/// The pavilion number.
+    </span><span class="attr">#[validate(range(min = <span class="number">1</span>, max = <span class="number">9</span>))]
     </span>pavilion: u8,
-    <span class="attr">#[validate(range(min = <span class="number">1</span>, max = <span class="number">599</span>))]
+    <span class="doccomment">/// The room number.
+    </span><span class="attr">#[validate(range(min = <span class="number">1</span>, max = <span class="number">599</span>))]
     </span>room: u16,
 }
 
 <span class="kw">impl </span>AuditoriumNumber {
-    <span class="kw">pub fn </span>new(pavilion: u8, room: u16) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, ValidationErrors&gt; {
+    <span class="doccomment">/// Creates a new `AuditoriumNumber` instance with the specified pavilion and room numbers.
+    ///
+    /// # Arguments
+    ///
+    /// * `pavilion`: The pavilion number.
+    /// * `room`: The room number.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the created `AuditoriumNumber` if it passes validation,
+    /// or validation errors if validation fails.
+    </span><span class="kw">pub fn </span>new(pavilion: u8, room: u16) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, ValidationErrors&gt; {
         <span class="kw">let </span>number = AuditoriumNumber { pavilion, room };
         number.validate()<span class="question-mark">?</span>;
 
@@ -607,7 +731,9 @@
     }
 }
 
-<span class="attr">#[derive(Default, Clone, Copy, Debug)]
+<span class="doccomment">/// Represents a day of the week of the university schedule.
+</span><span class="attr">#[allow(clippy::missing_docs_in_private_items)]
+#[derive(Default, Clone, Copy, Debug)]
 </span><span class="kw">pub enum </span>Day {
     <span class="attr">#[default]
     </span>Monday,

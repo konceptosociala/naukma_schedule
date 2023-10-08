@@ -304,6 +304,25 @@
 <a href="#304" id="304">304</a>
 <a href="#305" id="305">305</a>
 <a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::fmt::Display;
 <span class="kw">use </span>std::vec;
 <span class="kw">use </span>std::{path::Path, collections::HashMap};
@@ -317,14 +336,27 @@
     error::{ScheduleResult, ScheduleError}
 };
 
-<span class="attr">#[derive(Serialize, Deserialize, Clone, Debug)]
+<span class="doccomment">/// Represents a university schedule, including information 
+/// about university faculties.
+</span><span class="attr">#[derive(Serialize, Deserialize, Clone, Debug)]
 </span><span class="kw">pub struct </span>Schedule {
-    <span class="attr">#[serde(rename = <span class="string">&quot;Факультети&quot;</span>)]
-    </span>faculties: Vec&lt;Faculty&gt;,
+    <span class="doccomment">/// University faculties presented in schedule. Can be 
+    /// parsed and added manually as well.
+    </span><span class="attr">#[serde(rename = <span class="string">&quot;Факультети&quot;</span>)]
+    </span><span class="kw">pub </span>faculties: Vec&lt;Faculty&gt;,
 }
 
 <span class="kw">impl </span>Schedule {
-    <span class="kw">pub fn </span>new&lt;P: AsRef&lt;Path&gt;&gt;(paths: <span class="kw-2">&amp;</span>[P]) -&gt; ScheduleResult&lt;<span class="self">Self</span>&gt; {
+    <span class="doccomment">/// Creates a new `Schedule` by parsing university schedules from Excel files.
+    ///
+    /// # Arguments
+    ///
+    /// * `paths`: A slice of paths to Excel files containing faculty schedules.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the parsed `Schedule` if successful, or an error if parsing fails.
+    </span><span class="kw">pub fn </span>new&lt;P: AsRef&lt;Path&gt;&gt;(paths: <span class="kw-2">&amp;</span>[P]) -&gt; ScheduleResult&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>faculties = <span class="macro">vec!</span>[];
 
         <span class="kw">for </span>path <span class="kw">in </span>paths {
@@ -335,63 +367,33 @@
     }
 }
 
-<span class="kw">impl </span>Default <span class="kw">for </span>Schedule {
-    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-        Schedule {
-            faculties: <span class="macro">vec!</span>[
-                Faculty {
-                    name: <span class="string">&quot;Факультет Економічних Наук&quot;</span>.to_owned(),
-                    specialities: [(
-                        SpecialityName::Management,
-                        Speciality {
-                            disciplines: [(
-                                <span class="string">&quot;Інвестування&quot;</span>.to_owned(),
-                                Discipline {
-                                    groups: <span class="macro">vec!</span>[
-                                        Group {
-                                            name: LessonType::Lection,
-                                            time: LessonTime {
-                                                from: Time::new(<span class="number">08</span>, <span class="number">30</span>).unwrap(),
-                                                to: Time::new(<span class="number">09</span>, <span class="number">50</span>).unwrap(),
-                                            },
-                                            weeks: Weeks::Range { first: <span class="number">1</span>, last: <span class="number">12 </span>},
-                                            auditorium: Auditorium::Pavilion(AuditoriumNumber::new(<span class="number">3</span>, <span class="number">205</span>).unwrap()),
-                                            day: Day::Wednesday,
-                                        },
-                                        Group {
-                                            name: LessonType::Classes(<span class="number">1</span>),
-                                            time: LessonTime {
-                                                from: Time::new(<span class="number">10</span>, <span class="number">00</span>).unwrap(),
-                                                to: Time::new(<span class="number">11</span>, <span class="number">20</span>).unwrap(),
-                                            },
-                                            weeks: Weeks::Single(<span class="number">3</span>),
-                                            auditorium: Auditorium::Pavilion(AuditoriumNumber::new(<span class="number">1</span>, <span class="number">313</span>).unwrap()),
-                                            day: Day::Friday,
-                                        }
-                                    ]
-                                }
-                            )].into()
-                        }
-                    )].into(),
-                }
-            ]
-        }
-    }
-}
-
 <span class="macro">impl_serde_display_fromstr!</span>(SpecialityName);
 
-<span class="attr">#[derive(Serialize, Deserialize, Clone, Debug)]
+<span class="doccomment">/// Represents a university faculty, including its name and 
+/// a collection of specialities with their schedules.
+</span><span class="attr">#[derive(Serialize, Deserialize, Clone, Debug)]
 </span><span class="kw">pub struct </span>Faculty {
-    <span class="attr">#[serde(rename = <span class="string">&quot;Назва факультету&quot;</span>)]
+    <span class="doccomment">/// The name of the faculty.
+    </span><span class="attr">#[serde(rename = <span class="string">&quot;Назва факультету&quot;</span>)]
     </span>name: String,
-    <span class="attr">#[serde(rename = <span class="string">&quot;Cпеціальності&quot;</span>)]
+    <span class="doccomment">/// A mapping of speciality names to their associated specialities.
+    </span><span class="attr">#[serde(rename = <span class="string">&quot;Cпеціальності&quot;</span>)]
     </span>specialities: Specialities,
 }
 
 <span class="kw">impl </span>Faculty {
-    <span class="kw">pub fn </span>new(path: <span class="kw-2">&amp;</span>Path) -&gt; ScheduleResult&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span>(name, <span class="kw-2">mut </span>specialities) = {
+    <span class="doccomment">/// Creates a new `Faculty` by parsing faculty data from an Excel file.
+    ///
+    /// # Arguments
+    ///
+    /// * `path`: The path to the Excel file containing faculty schedule data.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing the parsed `Faculty` if successful, or an error if parsing fails.
+    </span><span class="kw">pub fn </span>new(path: <span class="kw-2">&amp;</span>Path) -&gt; ScheduleResult&lt;<span class="self">Self</span>&gt; {
+        <span class="comment">// Get faculty name (and optionally a defined speciality name)
+        </span><span class="kw">let </span>(name, <span class="kw-2">mut </span>specialities) = {
             <span class="kw">let </span>elements: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = path.to_str().unwrap().split(<span class="string">&#39;.&#39;</span>).collect();
             <span class="kw">let </span><span class="kw-2">mut </span>specialities = Specialities::new();
 
@@ -406,10 +408,10 @@
         };
 
         <span class="kw">let </span><span class="kw-2">mut </span>workbook: Xlsx&lt;<span class="kw">_</span>&gt; = open_workbook(path)
-            .map_err(|e| Error::from(e))<span class="question-mark">?</span>;
+            .map_err(Error::from)<span class="question-mark">?</span>;
         <span class="kw">let </span>range = workbook.worksheet_range(<span class="string">&quot;Аркуш1&quot;</span>)
             .ok_or(Error::Msg(<span class="string">&quot;Cannot find &#39;Аркуш1&#39; sheet&quot;</span>))<span class="question-mark">?
-            </span>.map_err(|e| Error::from(e))<span class="question-mark">?</span>;
+            </span>.map_err(Error::from)<span class="question-mark">?</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>reserved_day = Day::default();
         <span class="kw">let </span><span class="kw-2">mut </span>reserved_time = LessonTime::default();
@@ -417,9 +419,11 @@
         <span class="kw">let </span>defined_speciality = !specialities.is_empty();
 
         <span class="kw">for </span>row <span class="kw">in </span>range.rows() {
-            <span class="kw">let </span>day = <span class="kw">match </span><span class="kw-2">&amp;</span>row[<span class="number">0</span>] {
+            <span class="comment">// Get day of the week
+            </span><span class="kw">let </span>day = <span class="kw">match </span><span class="kw-2">&amp;</span>row[<span class="number">0</span>] {
                 DataType::String(s) =&gt; {
-                    <span class="kw">if </span>s == <span class="string">&quot;День&quot; </span>{
+                    <span class="comment">// Skip first header row
+                    </span><span class="kw">if </span>s == <span class="string">&quot;День&quot; </span>{
                         <span class="kw">continue</span>;
                     } <span class="kw">else </span>{
                         reserved_day = Day::from_str(s)<span class="question-mark">?</span>;
@@ -429,7 +433,8 @@
                 <span class="kw">_ </span>=&gt; reserved_day,
             };
             
-            <span class="kw">let </span>time = <span class="kw">match </span><span class="kw-2">&amp;</span>row[<span class="number">1</span>] {
+            <span class="comment">// Get lesson time
+            </span><span class="kw">let </span>time = <span class="kw">match </span><span class="kw-2">&amp;</span>row[<span class="number">1</span>] {
                 DataType::String(s) =&gt; {
                     reserved_time = LessonTime::from_str(s)<span class="question-mark">?</span>;
                     reserved_time
@@ -437,7 +442,8 @@
                 <span class="kw">_ </span>=&gt; reserved_time,
             };
 
-            <span class="kw">let </span>name = <span class="kw">match </span><span class="kw-2">&amp;</span>row[<span class="number">3</span>] {
+            <span class="comment">// Get lesson type (group number or a lection)
+            </span><span class="kw">let </span>name = <span class="kw">match </span><span class="kw-2">&amp;</span>row[<span class="number">3</span>] {
                 DataType::String(s) =&gt; LessonType::from_str(s)<span class="question-mark">?</span>,
                 DataType::Int(number) =&gt; LessonType::Classes(<span class="kw-2">*</span>number <span class="kw">as </span>u8),
                 DataType::Float(number) =&gt; LessonType::Classes(<span class="kw-2">*</span>number <span class="kw">as </span>u8),
@@ -445,7 +451,8 @@
                 <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(ScheduleError::InvalidLessonType(row[<span class="number">3</span>].to_string()))<span class="question-mark">?</span>,
             };
 
-            <span class="kw">let </span>weeks = <span class="kw">match </span><span class="kw-2">&amp;</span>row[<span class="number">4</span>] {
+            <span class="comment">// Get studying weeks
+            </span><span class="kw">let </span>weeks = <span class="kw">match </span><span class="kw-2">&amp;</span>row[<span class="number">4</span>] {
                 DataType::String(s) =&gt; Weeks::from_str(s)<span class="question-mark">?</span>,
                 DataType::Int(number) =&gt; Weeks::Single(<span class="kw-2">*</span>number <span class="kw">as </span>u8),
                 DataType::Float(number) =&gt; Weeks::Single(<span class="kw-2">*</span>number <span class="kw">as </span>u8),
@@ -453,14 +460,22 @@
                 <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(ScheduleError::InvalidWeeksFormat(row[<span class="number">4</span>].to_string()))<span class="question-mark">?</span>,
             };
 
-            <span class="kw">let </span>auditorium = <span class="kw">match </span><span class="kw-2">&amp;</span>row[<span class="number">5</span>] {
+            <span class="comment">// Get auditorium number (may be also art center or distance)
+            </span><span class="kw">let </span>auditorium = <span class="kw">match </span><span class="kw-2">&amp;</span>row[<span class="number">5</span>] {
                 DataType::String(s) =&gt; Auditorium::from_str(s)<span class="question-mark">?</span>,
                 <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(ScheduleError::InvalidAuditorium(row[<span class="number">5</span>].to_string()))<span class="question-mark">?
             </span>};
 
             <span class="kw">let </span>group = Group { name, time, weeks, auditorium, day };
 
-            <span class="kw">if </span>defined_speciality {
+            <span class="comment">// If speciality defined in the filename, use it in parsing
+            // and just copy discipline name without processing.
+            //
+            // Else if not defined, parse speciality names from
+            // discipline names and write them to the specialities collection.
+            // If not present, prefer `General` speciality (for common
+            // lection attendance)
+            </span><span class="kw">if </span>defined_speciality {
                 <span class="kw">let </span>discipline = row[<span class="number">2</span>].to_string().replace(<span class="string">&quot;  &quot;</span>, <span class="string">&quot; &quot;</span>).replace(<span class="string">&#39;\n&#39;</span>, <span class="string">&quot;&quot;</span>);
                 <span class="kw">let </span>spec = specialities.values_mut().next().unwrap();
                 <span class="kw">match </span>spec.disciplines.get_mut(<span class="kw-2">&amp;</span>discipline) {
@@ -500,25 +515,44 @@
     }
 }
 
-<span class="attr">#[derive(Serialize, Deserialize, Clone, Debug)]
+<span class="doccomment">/// Represents a university speciality, including a collection of disciplines.
+</span><span class="attr">#[derive(Serialize, Deserialize, Clone, Debug)]
 </span><span class="kw">pub struct </span>Speciality {
-    <span class="attr">#[serde(rename = <span class="string">&quot;Дисципліни&quot;</span>)]
+    <span class="doccomment">/// A mapping of discipline names to their associated groups.
+    </span><span class="attr">#[serde(rename = <span class="string">&quot;Дисципліни&quot;</span>)]
     </span>disciplines: Disciplines,
 }
 
-<span class="attr">#[derive(Default, Clone, Copy, Debug, PartialEq, Eq, Hash)]
+<span class="doccomment">/// Represents the names of university specialities.
+</span><span class="attr">#[derive(Default, Clone, Copy, Debug, PartialEq, Eq, Hash)]
 </span><span class="kw">pub enum </span>SpecialityName {
-    SoftwareEngineering,
-    Economics,
-    Management,
-    Finances,
-    Marketing,
-    <span class="attr">#[default]
+    <span class="doccomment">/// Software Engineering speciality of Faculty of Informatics.
+    </span>SoftwareEngineering,
+    <span class="doccomment">/// Economics speciality of Faculty of Economical Science.
+    </span>Economics,
+    <span class="doccomment">/// Management speciality of Faculty of Economical Science.
+    </span>Management,
+    <span class="doccomment">/// Finances speciality of Faculty of Economical Science.
+    </span>Finances,
+    <span class="doccomment">/// Marketing speciality of Faculty of Economical Science.
+    </span>Marketing,
+    <span class="doccomment">/// General speciality (default when no specific speciality is identified).
+    </span><span class="attr">#[default]
     </span>General,
 }
 
 <span class="kw">impl </span>SpecialityName {
-    <span class="kw">pub fn </span>from_discipline(discipline: <span class="kw-2">&amp;</span>str) -&gt; Vec&lt;SpecialityName&gt; {
+    <span class="doccomment">/// Converts a discipline name into a list of associated speciality names.
+    ///
+    /// # Arguments
+    ///
+    /// * `discipline`: The name of the discipline with defined 
+    /// specialities (e.g. `(марк.)`, `(екон.+фін.)`).
+    ///
+    /// # Returns
+    ///
+    /// Parsed speciality names representing the associated specialities.
+    </span><span class="kw">pub fn </span>from_discipline(discipline: <span class="kw-2">&amp;</span>str) -&gt; Vec&lt;SpecialityName&gt; {
         <span class="kw">use </span>SpecialityName::<span class="kw-2">*</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>names = <span class="macro">vec!</span>[];
@@ -601,12 +635,16 @@
     }
 }
 
-<span class="kw">pub type </span>Specialities = HashMap&lt;SpecialityName, Speciality&gt;;
+<span class="doccomment">/// A mapping of university speciality names to their associated specialities.
+</span><span class="kw">pub type </span>Specialities = HashMap&lt;SpecialityName, Speciality&gt;;
 
-<span class="attr">#[derive(Serialize, Deserialize, Clone, Debug)]
+<span class="doccomment">/// Represents a university discipline, including a list of associated groups.
+</span><span class="attr">#[derive(Serialize, Deserialize, Clone, Debug)]
 </span><span class="kw">pub struct </span>Discipline {
-    <span class="attr">#[serde(rename = <span class="string">&quot;Групи&quot;</span>)]
+    <span class="doccomment">/// A list of student groups associated with this discipline.
+    </span><span class="attr">#[serde(rename = <span class="string">&quot;Групи&quot;</span>)]
     </span>groups: Vec&lt;Group&gt;,
 }
 
-<span class="kw">pub type </span>Disciplines = HashMap&lt;String, Discipline&gt;;</code></pre></div></section></main></body></html>
+<span class="doccomment">/// A mapping of discipline names to their associated disciplines.
+</span><span class="kw">pub type </span>Disciplines = HashMap&lt;String, Discipline&gt;;</code></pre></div></section></main></body></html>

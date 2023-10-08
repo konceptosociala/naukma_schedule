@@ -35,23 +35,39 @@ Copyright (c) Oleksandr Hnutov
 
 */
 
+#![warn(missing_docs)]
+#![warn(clippy::missing_docs_in_private_items)]
+
+/// Definitions related to university disciplines' lesson groups.
 mod group;
+/// Custom error types and error handling for the university schedule parser.
 mod error;
+/// Custom macros for parsing university schedule
 mod macros;
+/// Definitions related to the university schedule, including faculties and specialities.
 mod schedule;
 
 use anyhow::Result;
 use clap::Parser;
 use schedule::*;
 
+/// The command-line arguments parsing structure.
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
-
 struct Args {
+    /// The list of file paths to university schedule Excel files.
     #[arg(short, long, required=true, num_args=1..)]
     files: Vec<String>,
 }
 
+/// The entry point of the university schedule parser program.
+///
+/// This function parses command-line arguments, reads university schedule data from Excel files,
+/// and writes the parsed data to a JSON file.
+///
+/// # Returns
+///
+/// A `Result` indicating success or failure of the program.
 fn main() -> Result<()> {
     let args = Args::parse();
     let schedule = Schedule::new(&args.files)?;
